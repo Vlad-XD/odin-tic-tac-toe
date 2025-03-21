@@ -1,7 +1,7 @@
 console.log("Program start: ");
 console.log(" ");
 
-Gameboard("a", "b");
+gamecontroller = GameController("Vlad","John");
 
 /*
     Gameboard: object that holds an array storing the gameboard information.
@@ -21,9 +21,9 @@ function Gameboard(player1, player2) {
     Parameters: String mark, Int row, Int col
     Return value: N/A
   */
-  const makePlay = (mark, row, col) => {
+  const makePlay = (player, row, col) => {
     arrayLocation = row * 3 + col;
-    gameArr[arrayLocation] = mark;
+    gameArr[arrayLocation] = player.getMark();
   };
 
   /* 
@@ -84,10 +84,13 @@ function Gameboard(player1, player2) {
     console.log(`${gameArr[6]} | ${gameArr[7]} | ${gameArr[8]}`);
   };
   
-  makePlay("X", 0, 0);
-  makePlay("X", 0, 1);
-  makePlay("X", 1, 1);
-  makePlay("X", 0, 2);
+  makePlay(player1, 0, 0);
+  makePlay(player2, 0, 1);
+  makePlay(player1, 1, 1);
+  makePlay(player2, 0, 2);
+  makePlay(player2, 0, 2);
+  makePlay(player2, 1, 2);
+  makePlay(player2, 2, 2);
   print();
   console.log(checkWin());
 }
@@ -95,11 +98,57 @@ function Gameboard(player1, player2) {
 /*
   Player: object holding player information
   Constructors:
-    - Player(name)
+    - Player(playerName)
 */
+function Player(playerName) {
+  let name = playerName;
+  let score = 0;
+  let mark = null; //player assigned a mark when game starts
+
+  const getName = () => {
+    return name;
+  }
+
+  const updateName = (newName) => {
+    name = newName;
+  }
+
+  const getScore = () => {
+    return score;
+  }
+
+  const updateScore = (newScore) => {
+    score = newScore;
+  }
+
+  const getMark = () => {
+    return mark;
+  }
+
+  const updateMark = (newMark) => {
+    mark = newMark
+  }
+
+  return {getName, updateName, getScore, updateScore, getMark, updateMark};
+}
 
 /*
   GameController: object that controls the flow of the game
   Constructors:
-  - GameController(player1_name, player2_name, gameboard)
+  - GameController(player1_name, player2_name)
 */
+
+function GameController(player1_name, player2_name) {
+  // make two new player objects at start of game
+  player1 = Player(player1_name);
+  player2 = Player(player2_name);
+
+  // set marks for players
+  player1.updateMark("X");
+  player2.updateMark("O");
+
+  // create a new gameboard
+  gameboard = Gameboard(player1, player2);
+
+  return {};
+}
