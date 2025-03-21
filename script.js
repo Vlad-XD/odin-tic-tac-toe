@@ -1,7 +1,20 @@
 console.log("Program start: ");
 console.log(" ");
 
-gamecontroller = GameController("Vlad","John");
+
+
+gameController = GameController("Vlad","John");
+let condition = true;
+while(condition){
+  for (let i=0; i <3; i++){
+    for (let j=0; j<3; j++){
+      console.log("             aa");
+      if(gameController.nextMove(i, j)){
+        condition = false;
+      }
+    }
+  }
+} 
 
 /*
     Gameboard: object that holds an array storing the gameboard information.
@@ -14,6 +27,7 @@ function Gameboard(player1, player2) {
     i.e [row0col0, row0col1,row0col2, row1col0,...]
       - initialized w/ null value, indicating an empty grid
   */
+ //TODO:UPDATE 0s TO NULL VALUES WHEN NO LONGER NEEDED FOR PRINTING IN CONSOLE
   const gameArr = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   /* 
@@ -24,7 +38,17 @@ function Gameboard(player1, player2) {
   const makePlay = (player, row, col) => {
     arrayLocation = row * 3 + col;
     gameArr[arrayLocation] = player.getMark();
+    print();
   };
+
+    /* 
+    resetBoard: sets all board positions back to null
+    Parameters: N/A
+    Return value: N/A
+  */
+  const resetBoard = () => {
+    gameArr.splice(0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  }
 
   /* 
     checkWin: checks if a player has won on grid
@@ -75,6 +99,7 @@ function Gameboard(player1, player2) {
     return false;
   }
 
+  //TODO: DELETE
   // print function for debugging purposes
   const print = () => {
     console.log(`${gameArr[0]} | ${gameArr[1]} | ${gameArr[2]}`);
@@ -84,15 +109,19 @@ function Gameboard(player1, player2) {
     console.log(`${gameArr[6]} | ${gameArr[7]} | ${gameArr[8]}`);
   };
   
-  makePlay(player1, 0, 0);
-  makePlay(player2, 0, 1);
-  makePlay(player1, 1, 1);
-  makePlay(player2, 0, 2);
-  makePlay(player2, 0, 2);
-  makePlay(player2, 1, 2);
-  makePlay(player2, 2, 2);
-  print();
-  console.log(checkWin());
+  return {makePlay, resetBoard, checkWin};
+  // // TODO: DELETE AFTER GETTING PROGRAM UP AND RUNNING
+  // makePlay(player1, 0, 0);
+  // makePlay(player2, 0, 1);
+  // makePlay(player1, 1, 1);
+  // makePlay(player2, 0, 2);
+  // makePlay(player2, 0, 2);
+  // makePlay(player2, 1, 2);
+  // makePlay(player2, 2, 2);
+  // print();
+  // console.log(checkWin());
+  // resetBoard();
+  // print();
 }
 
 /*
@@ -140,15 +169,99 @@ function Player(playerName) {
 
 function GameController(player1_name, player2_name) {
   // make two new player objects at start of game
-  player1 = Player(player1_name);
-  player2 = Player(player2_name);
+  const player1 = Player(player1_name);
+  const player2 = Player(player2_name);
 
   // set marks for players
   player1.updateMark("X");
   player2.updateMark("O");
 
-  // create a new gameboard
-  gameboard = Gameboard(player1, player2);
+  // set counter for number of moves
+  let counter = 0;
 
-  return {};
+  // create a new gameboard
+  const gameboard = Gameboard(player1, player2);
+
+  // currentPlayer: holds current player making a move, used in controlling flow of game
+  let currentPlayer = player1;
+
+  /* 
+    nextMove: the mechanism through which GameController will progress the move
+      - automatically switches between current player making a move
+      - makes a play on the gameboard
+      - notifies if a player wins
+      - returns boolean false while game is active
+      - returns String "Tie" if game ends in a tie (counter === 8 && no winning player)
+      - returns Player if a player has won
+    Return value: N/A;
+  */
+  const nextMove = (row, col) => {
+    // make a move
+    gameboard.makePlay(currentPlayer, row, col);
+
+    // check for a winner
+    let winningPlayer = checkWin();
+    if(winningPlayer) {
+      console.log(winningPlayer.getName()); // TODO: DELETE 
+      winningPlayer.updateScore(winningPlayer.getScore()++);
+      return  winningPlayer;
+    }
+    // check for tie
+    if (counter === 8){
+      return "Tie";
+    }
+
+    // switch players if no winner
+    if (currentPlayer === player1){
+      currentPlayer = player2;
+    } else {
+      currentPlayer = player1;
+    }
+
+    // and increase counter
+    counter++;
+
+    return false;
+  }
+
+    /* 
+    checkWin: checks if a player has won on grid and if so, return winning player
+    Return value: false or Player
+  */
+  function checkWin() {
+    winner = gameboard.checkWin();
+
+    if (winner === player1.getMark()){
+      return player1;
+    }
+
+    if (winner === player2.getMark()){
+      return player2;
+    }
+
+    return false;
+
+  }
+
+  const resetGame = () => {
+    gameboard.resetBoard();
+    counter - 0;
+    currentPlayer = player1_name;
+  }
+
+  const resetScore = () => {
+    player1.updateScore(0);
+    player2.updateScore(0);
+  }
+
+  function increaseScore(player) {
+    player.updateScore(player.getScore()++);
+  }
+
+  const updateNames = (newPlayerName1, newPlayerName2) => {
+    player1.updateName(newPlayerName1);
+    player2.updateName(newPlayerName2);
+  }
+
+  return {nextMove, resetGame, resetScore, updateNames};
 }
