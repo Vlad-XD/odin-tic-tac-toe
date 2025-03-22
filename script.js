@@ -4,17 +4,7 @@ console.log(" ");
 
 
 gameController = GameController("Vlad","John");
-let condition = true;
-while(condition){
-  for (let i=0; i <3; i++){
-    for (let j=0; j<3; j++){
-      console.log("             aa");
-      if(gameController.nextMove(i, j)){
-        condition = false;
-      }
-    }
-  }
-} 
+gameController.playConsole();
 
 /*
     Gameboard: object that holds an array storing the gameboard information.
@@ -36,7 +26,7 @@ function Gameboard(player1, player2) {
     Return value: N/A
   */
   const makePlay = (player, row, col) => {
-    arrayLocation = row * 3 + col;
+    let arrayLocation = row * 3 + col;
     gameArr[arrayLocation] = player.getMark();
     print();
   };
@@ -99,6 +89,16 @@ function Gameboard(player1, player2) {
     return false;
   }
 
+    /* 
+    checkCols: checks if a position is empty and returns true if it is.
+    Return value: true or false
+  */
+  const checkEmpty = (row, col) => {
+    let arrayLocation = row * 3 + col;
+    // TODO: UPDATE 0 TO NULL ONCE CONSOLE NO LONGER USED
+    return (gameArr[arrayLocation] === 0 ? true : false);
+  }
+
   //TODO: DELETE
   // print function for debugging purposes
   const print = () => {
@@ -109,7 +109,7 @@ function Gameboard(player1, player2) {
     console.log(`${gameArr[6]} | ${gameArr[7]} | ${gameArr[8]}`);
   };
   
-  return {makePlay, resetBoard, checkWin};
+  return {makePlay, resetBoard, checkWin, checkEmpty};
   // // TODO: DELETE AFTER GETTING PROGRAM UP AND RUNNING
   // makePlay(player1, 0, 0);
   // makePlay(player2, 0, 1);
@@ -203,7 +203,7 @@ function GameController(player1_name, player2_name) {
     let winningPlayer = checkWin();
     if(winningPlayer) {
       console.log(winningPlayer.getName()); // TODO: DELETE 
-      winningPlayer.updateScore(winningPlayer.getScore()++);
+      winningPlayer.updateScore(winningPlayer.getScore() + 1);
       return  winningPlayer;
     }
     // check for tie
@@ -242,11 +242,66 @@ function GameController(player1_name, player2_name) {
     return false;
 
   }
+  
+  //TODO: DELETE WHEN NO LONGER NEEDED:
+  //plays game in console
+  const playConsole = () => {
+    let playingGame = true;
+    let row = 0;
+    let col = 0;
+    let input = "";
+    let result = false;
+    let gridIsEmpty = false;
+    while(playingGame) {
+      //prompt player for move
+      input = prompt(`Input (row,column) for ${currentPlayer.getName()}'s move:`);
+      row = parseInt(input.split(",")[0]);
+      col = parseInt(input.split(",")[1]);
+
+      //make a move
+      gridIsEmpty = gameboard.checkEmpty(row, col);
+      while(!gridIsEmpty){
+        input = prompt(`Invalid move! Location is already taken. ${currentPlayer.getName()}, pick a new move:`);
+        row = parseInt(input.split(",")[0]);
+        col = parseInt(input.split(",")[1]);
+        gridIsEmpty = gameboard.checkEmpty(row, col);
+      }
+
+      result = nextMove(row, col);
+      console.log("\n\n\n");
+      if (result){
+        //if a winner or tie is declared, return result
+        if (result == "Tie"){
+          console.log("It's a tie!")
+        }
+        else {
+          console.log(`${result.getName()} has won!`)
+        }
+
+        //return scores
+        console.log("\n\n\nCurrent Scores: ");
+        console.log(`${player1.getName()} : ${player1.getScore()}`);
+        console.log(`${player2.getName()} : ${player2.getScore()}`);
+        console.log("\n\n\n");
+
+        //prompt user to play again
+        if(prompt("Play again? (yes or no)").toLowerCase() === "yes"){
+          resetGame();
+        } else {
+          playingGame = false;
+        }
+      }
+
+    }
+
+    //print a message when game ends
+    console.log("\n...\n...\n...\nThe game has ended. Thanks for playing!");
+  }
 
   const resetGame = () => {
     gameboard.resetBoard();
-    counter - 0;
-    currentPlayer = player1_name;
+    counter = 0;
+    currentPlayer = player1;
   }
 
   const resetScore = () => {
@@ -263,5 +318,5 @@ function GameController(player1_name, player2_name) {
     player2.updateName(newPlayerName2);
   }
 
-  return {nextMove, resetGame, resetScore, updateNames};
+  return {nextMove, resetGame, resetScore, updateNames, playConsole};
 }
