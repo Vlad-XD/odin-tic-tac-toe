@@ -356,6 +356,8 @@ function DisplayController(matchingGameController) {
   const endScreen = document.querySelector("div.end-screen");
   const endScreenMessage = document.querySelector("div.end-screen p.end-message");
   const playAgainButton = document.querySelector("div.end-screen button.play-again");
+  const resetGameButton = document.querySelector("div.game-footer button.reset-game");
+  const resetScoreButton = document.querySelector("div.game-footer button.reset-score");
 
 // set event listeners on elements to make a move while valid
 for (const grid of playingGrids) {
@@ -377,6 +379,19 @@ playAgainButton.addEventListener("click", ()=> {
   hideEndScreen();
 })
 
+// set event listener for reset game button
+resetGameButton.addEventListener("click", ()=> {
+  resetBoard();
+  gameController.resetGame();
+  hideEndScreen();
+})
+
+// set event listener for reset score button
+resetScoreButton.addEventListener("click", ()=> {
+  updateScore("player1",0);
+  updateScore("player2",0);
+  gameController.resetScore();
+})
 // TODO: DELETE AFTER TESTING IS DONE
   player2Score.addEventListener("click", () => {
     resetBoard();
