@@ -1,7 +1,7 @@
 :root {
-  --player1-color: red;
-  --button-color: red;
-  --player2-color: blue;
+  --player1-color: #DA1212;
+  --button-color: #206A5D;
+  --player2-color: #11468F;
   --grid-width: 5rem;
   --grid-gap-size: 0.15rem;
   --player-hover-color: grey;
