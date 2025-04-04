@@ -15,6 +15,7 @@ html {
   min-height: 100%;
   min-width: 100%;
   background-color: var(--page-bg-color);
+  font-size: 160%;
 }
 
 body {
@@ -22,6 +23,7 @@ body {
   flex-direction: column;
   align-items: center;
   flex-grow: 1;
+  position: relative;
 }
 
 /* Game Header Bar */
@@ -291,7 +293,7 @@ dialog.player-rename {
   border: 0.2rem solid;
   border-radius: 0.5rem;
   width: 16rem;
-  height: 13rem;
+  /* height: 13rem; */
   position: absolute;
   top: 10rem;
   left: calc(50% - 16rem / 2);
