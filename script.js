@@ -2,9 +2,11 @@ console.log("Program start: ");
 console.log(" ");
 
 
-
 gameController = GameController("Vlad","John");
-gameController.playConsole();
+displayController = DisplayController(gameController);
+gameController.setDisplayController(displayController);
+
+// gameController.playConsole(); //TODO: DELETE AFTER GAME IS WORKING
 
 /*
     Gameboard: object that holds an array storing the gameboard information.
@@ -37,7 +39,8 @@ function Gameboard(player1, player2) {
     Return value: N/A
   */
   const resetBoard = () => {
-    gameArr.splice(0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    //TODO: update 0s to null values once no longer needed for printing
+    gameArr.splice(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   /* 
@@ -127,12 +130,13 @@ function Gameboard(player1, player2) {
 /*
   Player: object holding player information
   Constructors:
-    - Player(playerName)
+    - Player(playerName, playerID)
 */
-function Player(playerName) {
+function Player(playerName, playerID) {
   let name = playerName;
   let score = 0;
   let mark = null; //player assigned a mark when game starts
+  let id = playerID;
 
   const getName = () => {
     return name;
@@ -158,7 +162,11 @@ function Player(playerName) {
     mark = newMark
   }
 
-  return {getName, updateName, getScore, updateScore, getMark, updateMark};
+  const getID = () => {
+    return id;
+  }
+
+  return {getName, updateName, getScore, updateScore, getMark, updateMark, getID};
 }
 
 /*
@@ -169,8 +177,11 @@ function Player(playerName) {
 
 function GameController(player1_name, player2_name) {
   // make two new player objects at start of game
-  const player1 = Player(player1_name);
-  const player2 = Player(player2_name);
+  const player1 = Player(player1_name, "player1");
+  const player2 = Player(player2_name, "player2");
+
+  // create a display controller to be set later
+  let displayController = null;
 
   // set marks for players
   player1.updateMark("X");
@@ -204,6 +215,8 @@ function GameController(player1_name, player2_name) {
     if(winningPlayer) {
       console.log(winningPlayer.getName()); // TODO: DELETE 
       winningPlayer.updateScore(winningPlayer.getScore() + 1);
+      // update score on display
+      displayController.updateScore(winningPlayer.getID(),winningPlayer.getScore());
       return  winningPlayer;
     }
     // check for tie
@@ -309,8 +322,8 @@ function GameController(player1_name, player2_name) {
     player2.updateScore(0);
   }
 
-  function increaseScore(player) {
-    player.updateScore(player.getScore()++);
+  const getCurrentPlayer = () => {
+    return currentPlayer;
   }
 
   const updateNames = (newPlayerName1, newPlayerName2) => {
@@ -318,5 +331,166 @@ function GameController(player1_name, player2_name) {
     player2.updateName(newPlayerName2);
   }
 
-  return {nextMove, resetGame, resetScore, updateNames, playConsole};
+  const setDisplayController = (newDisplayController) => {
+    displayController = newDisplayController;
+  }
+
+  return {nextMove, resetGame, resetScore, updateNames, playConsole, setDisplayController, getCurrentPlayer};
+}
+
+/*
+  DisplayController: object utilized by game controller to handle display/DOM logic
+  - displayController(matchingGameController)
+*/
+
+function DisplayController(matchingGameController) {
+
+  // set game controller
+  const gameController = matchingGameController;
+
+// TODO: when initialized, should read document and obtain necessary elements
+  const playingGrids = document.querySelectorAll("div.grid-child");
+  const gridContainer = document.querySelector("div.grid-container");
+  const player1Score = document.querySelector("div.score.player1");
+  const player2Score = document.querySelector("div.score.player2");
+  const endScreen = document.querySelector("div.end-screen");
+  const endScreenMessage = document.querySelector("div.end-screen p.end-message");
+  const playAgainButton = document.querySelector("div.end-screen button.play-again");
+
+// set event listeners on elements to make a move while valid
+for (const grid of playingGrids) {
+  grid.addEventListener("click", ()=> {
+    if (gridContainer.getAttribute("data-selected") !== "inactive" 
+        && grid.getAttribute("data-player") === "none") {
+          makePlay(parseInt(grid.getAttribute("data-row")), 
+                   parseInt(grid.getAttribute("data-column")),
+                   gameController.getCurrentPlayer().getID(),
+                   gameController.getCurrentPlayer().getID() === "player2" ? "player1" : "player2");
+    }
+  })
+}
+
+// set event listener for play again button at the end screen
+playAgainButton.addEventListener("click", ()=> {
+  resetBoard();
+  gameController.resetGame();
+  hideEndScreen();
+})
+
+// TODO: DELETE AFTER TESTING IS DONE
+  player2Score.addEventListener("click", () => {
+    resetBoard();
+  })
+
+  /* 
+    makePlay: updates board accordingly when a play is made
+    Return value: N/A
+  */
+  const makePlay = (row, col, playerID, opponentID) => {
+    // identify grid to play based on row/column
+    const selectedGrid = getGrid(row, col);
+    console.log(selectedGrid);
+
+    // update data-player attribute of grid-child
+    selectedGrid.setAttribute("data-player", playerID);
+
+    // update data-selected attribute of grid-container
+    gridContainer.setAttribute("data-selected", opponentID);
+
+    // make move with controller
+    let moveResult = gameController.nextMove(row, col);
+
+    // if game has ended, displayController should operate accordingly
+    if (typeof moveResult === "object") {
+      deactivateBoard();
+      showEndScreen(`${moveResult.getName()} has won the game!`);
+    }
+
+    if (moveResult === "Tie"){
+      deactivateBoard();
+      showEndScreen("It is a tie!")
+    }
+  }
+
+  /* 
+    getGrid:return corresponding grid based on passed row and col
+    Return value: N/A
+  */
+  function getGrid(row, col) {
+    for (const grid of playingGrids) {
+      if (parseInt(grid.getAttribute("data-row")) === row 
+          && parseInt(grid.getAttribute("data-column")) === col) {
+        return grid;
+      }
+    }
+  }
+
+  /* 
+    showEndScreen: shows screen when game ends with passed message
+    Return value: N/A
+  */
+  function showEndScreen(message) {
+    endScreenMessage.textContent = message;
+    endScreen.style.visibility = "visible";
+    endScreen.style.opacity = 1;
+  }
+
+ /* 
+    hideEndScreen: hides game end screen
+    Return value: N/A
+  */
+  function hideEndScreen() {
+    endScreen.style.visibility = "hidden";
+    endScreen.style.opacity = 0;
+  }
+
+  /* 
+    updateScore: updates score for a passed player (playerID) accordingly
+    Return value: N/A
+  */
+  const updateScore = (playerID, score) => {
+    (playerID === "player1") ?
+    player1Score.textContent = score :
+    player2Score.textContent = score;
+  }
+
+  /* 
+    resetBoard: resets the board to its initial state
+    Return value: N/A
+  */
+ const resetBoard = () => {
+  // set data-player attribute of all grids to "none"
+  for (const grid of playingGrids) {
+    grid.setAttribute("data-player","none");
+  }
+  
+  // set data-selected attribute of grid-container to "player1"
+  gridContainer.setAttribute("data-selected","player1");
+ }
+
+ const activateBoard = (playerID) => {
+  // when board is active (players can make moves), grid-container's data-select value is a playerID
+  gridContainer.setAttribute("data-selected", playerID);
+ }
+
+ const deactivateBoard = () => {
+   // when board is active (players cannot make moves), grid-container's data-select value is "inactive"
+  gridContainer.setAttribute("data-selected", "inactive");
+ }
+
+ 
+// TODO: handle player renaming behavior
+
+// TODO: DELETE, FOR TESTING PURPOSES
+// makePlay(0,0,"player1","player2");
+//makePlay(1,2,"player2","player1");
+// updateScore("player1", 4);
+// updateScore("player2",2);
+
+for (const grid of playingGrids) {
+  console.log(grid);
+}
+
+return {makePlay, updateScore, resetBoard, activateBoard, deactivateBoard};
+
 }
