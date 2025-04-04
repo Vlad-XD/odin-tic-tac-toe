@@ -42,13 +42,17 @@ div.game-header button {
   color: white;
   border-radius: 1rem;
   height: 2.5rem;
-  width: 10rem;
+  width: 13rem;
+  flex-grow: 1;
   text-align: center; 
   font-weight: bold;
   font-size: 1.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+div.game-header button:hover {
+  cursor: pointer;
+  font-size: 1.75rem;
+  transition: font-size 0.15s ease-in-out;
 }
 
 div.game-header button.player1 {
@@ -220,7 +224,7 @@ div.grid-child svg.player2{
     font-size: 1.75rem;
     font-weight: bold;
     flex-grow: 0;
-    max-width: 80%;
+    max-width: 90%;
     height: 30%;
     text-wrap: wrap;
     text-align: center;
@@ -279,3 +283,97 @@ div.grid-child svg.player2{
     transition: width 0.10s ease-in-out;
     transition: height 0.10s ease-in-out;
   }
+
+  /* Rename player dialog modals */
+
+  dialog.player-rename {
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out;
+    background-color: white;
+    border: 0.2rem solid;
+    border-radius: 0.5rem;
+    width: 16rem;
+    height: 13rem;
+    position: absolute;
+    top: 10rem;
+    left: calc(50% - 16rem/2); 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 1rem;
+  }
+
+  dialog.player-rename div.cancel-button{
+    align-self: flex-end;
+  }
+
+  dialog.player-rename div.cancel-button:hover{
+    cursor: pointer;
+  }
+
+  dialog.player-rename div.cancel-button:hover svg{
+    color: red;
+    transition: color 0.1s ease-in-out;
+  }
+
+  dialog.player-rename p.main-text {
+    font-size: 1.5rem;
+  }
+
+  dialog.player-rename p.sub-text {
+    font-size: 0.75rem;
+  }
+
+  dialog.player-rename form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  dialog.player-rename form input {
+    border: 0.1rem solid black;
+    border-radius: 1rem;
+    margin: 1rem 0;
+    padding: 0 1rem;
+    width: 90%;
+  }
+
+  dialog.player-rename form input:focus {
+    border: 0.1rem solid black;
+  }
+
+  dialog.player-rename button[type="submit"] {
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 1rem;
+    padding: 0.5rem 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  dialog#player-1-rename-dialog button[type="submit"] {
+    background-color: var(--player1-color);
+  }
+
+  dialog#player-2-rename-dialog button[type="submit"] {
+    background-color: var(--player2-color);
+  }
+
+  dialog.player-rename button[type="submit"]:hover {
+    cursor: pointer;
+    font-size: 1rem;
+    /* padding: 0.75rem 0.5rem; */
+    transition: font-size 0.5s ease-in-out;
+    transition: padding 0.10s ease-in-out;
+  }
+
+  dialog.player-rename form p.error-label {
+    opacity: 0;
+    color: red;
+  }
+
+  dialog.player-rename::backdrop {
+    background-color: rgba(0, 0, 0, 0.75);
+  }
+
+  

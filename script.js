@@ -2,7 +2,7 @@ console.log("Program start: ");
 console.log(" ");
 
 
-gameController = GameController("Vlad","John");
+gameController = GameController("Player 1","Player 2");
 displayController = DisplayController(gameController);
 gameController.setDisplayController(displayController);
 
@@ -326,16 +326,23 @@ function GameController(player1_name, player2_name) {
     return currentPlayer;
   }
 
-  const updateNames = (newPlayerName1, newPlayerName2) => {
-    player1.updateName(newPlayerName1);
-    player2.updateName(newPlayerName2);
+  const updateName = (newPlayerName, playerID) => {
+    if(player1.getID() === playerID) {
+      player1.updateName(newPlayerName);
+    }
+
+    if(player2.getID() === playerID) {
+      player2.updateName(newPlayerName);
+    }
+
+    displayController.updateNames(player1.getName(), player2.getName());
   }
 
   const setDisplayController = (newDisplayController) => {
     displayController = newDisplayController;
   }
 
-  return {nextMove, resetGame, resetScore, updateNames, playConsole, setDisplayController, getCurrentPlayer};
+  return {nextMove, resetGame, resetScore, updateName, playConsole, setDisplayController, getCurrentPlayer};
 }
 
 /*
@@ -358,8 +365,22 @@ function DisplayController(matchingGameController) {
   const playAgainButton = document.querySelector("div.end-screen button.play-again");
   const resetGameButton = document.querySelector("div.game-footer button.reset-game");
   const resetScoreButton = document.querySelector("div.game-footer button.reset-score");
+  
+  // Player rename button elements
+  const player1NameButton = document.querySelector("div.game-header button.player1");
+  const player2NameButton = document.querySelector("div.game-header button.player2");
+  const player1RenameDialog = document.querySelector("dialog#player-1-rename-dialog");
+  const player2RenameDialog = document.querySelector("dialog#player-2-rename-dialog");
+  const player1SubmitButton = document.querySelector("dialog#player-1-rename-dialog form button");
+  const player2SubmitButton = document.querySelector("dialog#player-2-rename-dialog form button");
+  const player1CancelButton = document.querySelector("dialog#player-1-rename-dialog div.cancel-button");
+  const player2CancelButton = document.querySelector("dialog#player-2-rename-dialog div.cancel-button");
+  const player1FormInput = document.querySelector("dialog#player-1-rename-dialog form input");
+  const player2FormInput = document.querySelector("dialog#player-2-rename-dialog form input");
+  const player1FormErrorLabel = document.querySelector("dialog#player-1-rename-dialog form p");
+  const player2FormErrorLabel = document.querySelector("dialog#player-2-rename-dialog form p");
 
-// set event listeners on elements to make a move while valid
+  // set event listeners on elements to make a move while valid
 for (const grid of playingGrids) {
   grid.addEventListener("click", ()=> {
     if (gridContainer.getAttribute("data-selected") !== "inactive" 
@@ -392,6 +413,75 @@ resetScoreButton.addEventListener("click", ()=> {
   updateScore("player2",0);
   gameController.resetScore();
 })
+
+// set event listeners for player name buttons to open renaming dialog
+player1NameButton.addEventListener("click", ()=> {
+  player1RenameDialog.style.opacity = 0;
+  player1RenameDialog.style.borderColor = "var(--player1-color)";
+  player1RenameDialog.style.visibility = "visible";
+  player1RenameDialog.showModal();
+  player1RenameDialog.style.opacity = 1;
+})
+
+player2NameButton.addEventListener("click", ()=> {
+  player2RenameDialog.style.opacity = 0;
+  player2RenameDialog.style.borderColor = "var(--player2-color)";
+  player2RenameDialog.style.visibility = "visible";
+  player2RenameDialog.showModal();
+  player2RenameDialog.style.opacity = 1;
+})
+
+// set event listeners for rename dialog form submit button
+player1SubmitButton.addEventListener("click", (e)=> {
+  e.preventDefault();
+  
+  // check text input meets character length limits
+  if (player1FormInput.value.trim().length > 10 || player1FormInput.value.trim().length === 0) {
+    // show error if greater than 10 characters or is 0 characters
+    player1FormErrorLabel.style.opacity = 1;
+  } else {
+    // otherwise, change name and reset input
+    gameController.updateName(player1FormInput.value.trim(), "player1");
+    player1FormErrorLabel.style.opacity = 0;
+    player1RenameDialog.close();
+    player1RenameDialog.style.visibility = "hidden";
+    player1FormInput.value = "";   
+  }
+
+})
+
+player2SubmitButton.addEventListener("click", (e)=> {
+  e.preventDefault();
+
+  // check text input meets character length limits
+  if (player2FormInput.value.trim().length > 10 || player2FormInput.value.trim().length === 0) {
+    // show error if greater than 10 characters or is 0 characters
+    player2FormErrorLabel.style.opacity = 1;
+  } else {
+    // otherwise, change name and reset input
+    gameController.updateName(player2FormInput.value.trim(), "player2");
+    player2FormErrorLabel.style.opacity = 0;
+    player2RenameDialog.close();
+    player2RenameDialog.style.visibility = "hidden";
+    player2FormInput.value = "";   
+  }
+})
+
+// set event listeners for rename dialog form cancel button
+player1CancelButton.addEventListener("click", ()=> {
+  player1RenameDialog.close();
+  player1RenameDialog.style.visibility = "hidden";
+  player1FormInput.value = "";
+  player2FormErrorLabel.style.opacity = 0;
+})
+
+player2CancelButton.addEventListener("click", ()=> {
+  player2RenameDialog.close();
+  player2RenameDialog.style.visibility = "hidden";
+  player2FormInput.value = "";
+  player2FormErrorLabel.style.opacity = 0;
+})
+
 // TODO: DELETE AFTER TESTING IS DONE
   player2Score.addEventListener("click", () => {
     resetBoard();
@@ -493,6 +583,14 @@ resetScoreButton.addEventListener("click", ()=> {
   gridContainer.setAttribute("data-selected", "inactive");
  }
 
+  /* 
+  updateNames: updates names on player name buttons
+  Return value: N/A
+*/
+  const updateNames = (player1Name, player2Name) => {
+      player1NameButton.textContent = player1Name;
+      player2NameButton.textContent = player2Name;
+    }
  
 // TODO: handle player renaming behavior
 
@@ -506,6 +604,6 @@ for (const grid of playingGrids) {
   console.log(grid);
 }
 
-return {makePlay, updateScore, resetBoard, activateBoard, deactivateBoard};
+return {makePlay, updateScore, resetBoard, activateBoard, deactivateBoard, updateNames};
 
 }
